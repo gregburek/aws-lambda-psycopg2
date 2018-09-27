@@ -1,0 +1,20 @@
+FROM amazonlinux:2017.03.1.20170812
+
+RUN yum install -y https://download.postgresql.org/pub/repos/yum/10/redhat/rhel-6-x86_64/pgdg-redhat10-10-2.noarch.rpm && \
+    sed -i "s/rhel-\$releasever-\$basearch/rhel-6.9-x86_64/g" "/etc/yum.repos.d/pgdg-10-redhat.repo" && \
+    yum install -y postgresql10-devel python27-devel curl gcc openssl-devel
+
+RUN curl -L https://github.com/psycopg/psycopg2/archive/2_7_5.tar.gz -o psycopg2.tar.gz && \
+    mkdir psycopg2 && \
+    tar xvzf psycopg2.tar.gz -C psycopg2 --strip-components 1 && \
+    rm psycopg2/setup.cfg
+
+COPY setup.cfg psycopg2/setup.cfg
+
+RUN cd psycopg2 && \
+    python2.7 setup.py build && \
+    rm -rf /psycopg2/build/lib.linux-x86_64-2.7/psycopg2/tests
+
+VOLUME ["/opt"]
+
+CMD ["cp", "-R", "psycopg2/build/lib.linux-x86_64-2.7/psycopg2", "/opt/psycopg2-2.7"]
